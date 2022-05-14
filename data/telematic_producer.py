@@ -37,6 +37,7 @@ if __name__ == "__main__":
         producer = KafkaProducer(bootstrap_servers=["localhost:9092"])
         logging.info("Starting stream...")
         for reading in telemetry:
+            # Get record attributes into a dictionary and convert to json
             record = {}
             attributes = reading.split(",")
             for col, val in zip(header, attributes):
@@ -48,9 +49,7 @@ if __name__ == "__main__":
                     value=converted,
                     key=record["deviceId"].encode("utf-8"),
                 )
-                sleep(3)
+                sleep(3) # Simulates delay between readings
             except KafkaError:
                 print("Error occurred")
                 logging.exception("Error occurred during stream writing")
-
-    logging.info("Process complete!")
