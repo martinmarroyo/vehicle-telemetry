@@ -4,7 +4,7 @@ vehicle telemetry data from the Telematicsdata.csv
 and writes it to a Kafka topic called VehicleTelemetry.
 
 For the sake of the simulation, we have the data stream in
-at a rate of 1 line per second.
+at a rate of 1 reading every 3 seconds.
 """
 import json
 import logging
