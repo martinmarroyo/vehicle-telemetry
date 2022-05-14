@@ -53,3 +53,4 @@ if __name__ == "__main__":
             except KafkaError:
                 print("Error occurred")
                 logging.exception("Error occurred during stream writing")
+                
