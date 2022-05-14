@@ -23,7 +23,7 @@ conf = dotenv_values(".env")
 
 if __name__ == "__main__":
 
-    with open(conf["DATAFILE"]) as telemetry:
+    with open(conf["DATAFILE"],encoding='utf-8') as telemetry:
         # Set up our data feed and producer
         header = [
             "deviceId",
