@@ -9,7 +9,6 @@ at a rate of 1 line per second.
 import json
 import logging
 from time import sleep
-import pandas as pd
 from dotenv import dotenv_values
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
@@ -23,33 +22,35 @@ logging.basicConfig(
 conf = dotenv_values(".env")
 
 if __name__ == "__main__":
-    # Set up our data feed and producer
-    telemetry = pd.read_csv(conf["DATAFILE"])
-    producer = KafkaProducer(bootstrap_servers=["localhost:9092"])
 
-    logging.info("Starting stream...")
-    # Creates a mock stream of telemetry data
-    for row in telemetry.iterrows():
-        converted = json.dumps(
-            {
-                "deviceId": row[1]["deviceId"],
-                "timeMili": row[1]["timeMili"],
-                "timestamp": row[1]["timestamp"],
-                "value": row[1]["value"],
-                "variable": row[1]["variable"],
-                "alarmClass": row[1]["alarmClass"],
-            }
-        )
-        converted = converted.encode("utf-8")
-        try:
-            producer.send(
-                "VehicleTelemetry",
-                value=converted,
-                key=row[1]["deviceId"].encode("utf-8"),
-            )
-            sleep(1)
-        except KafkaError:
-            print("Error occurred...")
-            logging.exception("Something went wrong with our Kafka connection")
+    with open(conf["DATAFILE"], "rb") as telemetry:
+        # Set up our data feed and producer
+        header = [
+            "deviceId",
+            "timeMili",
+            "timestamp",
+            "value",
+            "variable",
+            "alarmClass",
+        ]
+        next(telemetry)  # Skip header row
+        producer = KafkaProducer(bootstrap_servers=["localhost:9092"])
+        logging.info("Starting stream...")
+        for reading in telemetry:
+            record = {}
+            attributes = reading.split(",")
+            for col, val in zip(header, attributes):
+                record[col] = val
+            try:
+                converted = json.dumps(record).encode("utf-8")
+                producer.send(
+                    "VehicleTelemetry",
+                    value=converted,
+                    key=record["deviceId"].encode("utf-8"),
+                )
+                sleep(3)
+            except KafkaError:
+                print("Error occurred")
+                logging.exception("Error occurred during stream writing")
 
     logging.info("Process complete!")
