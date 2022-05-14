@@ -23,7 +23,7 @@ conf = dotenv_values(".env")
 
 if __name__ == "__main__":
 
-    with open(conf["DATAFILE"], "rb") as telemetry:
+    with open(conf["DATAFILE"]) as telemetry:
         # Set up our data feed and producer
         header = [
             "deviceId",
@@ -53,4 +53,3 @@ if __name__ == "__main__":
             except KafkaError:
                 print("Error occurred")
                 logging.exception("Error occurred during stream writing")
-                
