@@ -20,7 +20,7 @@ if __name__ == "__main__":
         format="%(asctime)s:%(levelname)s:%(message)s",
     )
     conf = dotenv_values(".env")
-    consumer = KafkaConsumer("VehicleTelemetry", bootstrap_servers=["localhost:9092"])
+    consumer = KafkaConsumer("VehicleTelemetry", bootstrap_servers=[conf['KAFKA_BROKER']])
     s3_client = boto3.client(
         "s3",
         aws_access_key_id=conf["ACCESS_KEY"],
