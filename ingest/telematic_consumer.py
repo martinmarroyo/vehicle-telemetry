@@ -39,7 +39,7 @@ if __name__ == "__main__":
             # Set up object name and push to s3
             obj_name = (
                 "us/vehicle-telemetry-data"
-                f"/vechicle-id={vehicle_id}"
+                f"/vehicle-id={vehicle_id}"
                 f"/year={dt.year}"
                 f"/month={dt.month}"
                 f"/day={dt.day}"
