@@ -34,7 +34,7 @@ if __name__ == "__main__":
             vehicle_id = message.key.decode("utf-8")
             payload = json.loads(message.value.decode("utf-8"))
             payload["value"] = payload["value"].replace('"', "")
-            payload["alarmClass"] = payload["alarmClass"].replace('"', "")
+            payload["alarmClass"] = payload["alarmClass"]
             dt = datetime.strptime(payload["timestamp"], "%Y-%m-%d %H:%M:%S.%f")
             # Set up object name and push to s3
             obj_name = (
