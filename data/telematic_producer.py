@@ -2,14 +2,6 @@
 A script that creates a mock data stream of
 vehicle telemetry data from the Telematicsdata.csv
 and writes it to a Kafka topic called VehicleTelemetry.
-
-For the sake of the simulation, we have the data stream in
-at a rate of 1 reading every 3 seconds.
-"""
-"""
-A script that creates a mock data stream of
-vehicle telemetry data from the Telematicsdata.csv
-and writes it to a Kafka topic called VehicleTelemetry.
 For the sake of the simulation, we have the data stream in
 at a rate of 1 line per second.
 """
