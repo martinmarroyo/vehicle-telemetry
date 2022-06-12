@@ -1,0 +1,5 @@
+kafka-python
+pandas
+python-dotenv
+boto3
+moto[s3]
