@@ -7,6 +7,7 @@ at a rate of 1 line per second.
 """
 import json
 import logging
+import os
 from time import sleep
 import pandas as pd
 from dotenv import dotenv_values
@@ -16,15 +17,14 @@ from kafka.errors import KafkaError
 logging.basicConfig(
     level=logging.INFO,
     filename="log_telematic_producer.log",
-    encoding="utf-8",
+    # encoding="utf-8",
     format="%(asctime)s:%(levelname)s:%(message)s",
 )
 conf = dotenv_values(".env")
-
 if __name__ == "__main__":
     # Set up our data feed and producer
-    telemetry = pd.read_csv(conf["DATAFILE"])
-    producer = KafkaProducer(bootstrap_servers=["localhost:9092"])
+    telemetry = pd.read_csv(conf['DATAFILE'])
+    producer = KafkaProducer(bootstrap_servers=[conf['BROKER']])
 
     logging.info("Starting stream...")
     # Creates a mock stream of telemetry data
@@ -41,6 +41,7 @@ if __name__ == "__main__":
         )
         converted = converted.encode("utf-8")
         try:
+            print(converted)
             producer.send(
                 "VehicleTelemetry",
                 value=converted,
@@ -50,3 +51,12 @@ if __name__ == "__main__":
         except KafkaError:
             print("Error occurred...")
             logging.exception("Something went wrong with our Kafka connection")
+            # Retry
+            print("retrying...")
+            print(converted)
+            producer.send(
+                "VehicleTelemetry",
+                value=converted,
+                key=row[1]["deviceId"].encode("utf-8"),
+            )
+            sleep(1)
