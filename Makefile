@@ -14,8 +14,4 @@ sh:
 	docker exec -ti vehicle-telemetry bash
 
 view-stream:
-	docker exec -it broker \ 
-	kafka-console-consumer \
-	--bootstrap-server broker:9092 \
-	--topic VehicleTelemetry \
-	--from-beginning
+	docker exec -it broker kafka-console-consumer --bootstrap-server broker:9092 --topic VehicleTelemetry --from-beginning
