@@ -20,7 +20,7 @@ logging.basicConfig(
     # encoding="utf-8",
     format="%(asctime)s:%(levelname)s:%(message)s",
 )
-conf = dotenv_values(".env")
+conf = dotenv_values("env")
 if __name__ == "__main__":
     # Set up our data feed and producer
     telemetry = pd.read_csv(conf['DATAFILE'])

@@ -1,0 +1,2 @@
+DATAFILE=data/Telematicsdata.csv
+BROKER=broker:9092
