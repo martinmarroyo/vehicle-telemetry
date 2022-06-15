@@ -1,2 +1,2 @@
 DATAFILE=data/Telematicsdata.csv
-BROKER=broker:9092
+BROKER=kafka-broker:9092
