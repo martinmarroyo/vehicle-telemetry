@@ -8,16 +8,22 @@ services:
     working_dir: /vehicle-telemetry
     restart: always
     depends_on:
-      - broker
+      - kafka-broker
+    networks:
+      - vehicle_iot
   zookeeper:
     image: confluentinc/cp-zookeeper:7.0.1
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-  broker:
+      ZOO_MY_ID: 1
+    networks:
+      - vehicle_iot
+  # Apache Kafka
+  kafka-broker:
     image: confluentinc/cp-kafka:7.0.1
-    container_name: broker
+    container_name: kafka-broker
     ports:
     # To learn about configuring Kafka for access across networks see
     # https://www.confluent.io/blog/kafka-client-cannot-connect-to-broker-on-aws-on-docker-etc/
@@ -32,3 +38,133 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - vehicle_iot
+  # Druid
+  postgres:
+    container_name: postgres
+    image: postgres:13
+    volumes:
+      - metadata_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: FoolishPassword
+      POSTGRES_USER: druid
+      POSTGRES_DB: druid
+    networks:
+      - vehicle_iot
+
+  coordinator:
+    image: apache/druid:0.22.1
+    container_name: coordinator
+    volumes:
+      - druid_shared:/opt/shared
+      - coordinator_var:/opt/druid/var
+    depends_on:
+      - zookeeper
+      - postgres
+    ports:
+      - "8081:8081"
+    command:
+      - coordinator
+    env_file:
+      - environment
+    networks:
+      - vehicle_iot
+
+  druid-broker:
+    image: apache/druid:0.22.1
+    container_name: druid-broker
+    volumes:
+      - broker_var:/opt/druid/var
+    depends_on:
+      - zookeeper
+      - postgres
+      - coordinator
+    ports:
+      - "8082:8082"
+    command:
+      - broker
+    env_file:
+      - environment
+    networks:
+      - vehicle_iot
+
+  historical:
+    image: apache/druid:0.22.1
+    container_name: historical
+    volumes:
+      - druid_shared:/opt/shared
+      - historical_var:/opt/druid/var
+    depends_on:
+      - zookeeper
+      - postgres
+      - coordinator
+    ports:
+      - "8083:8083"
+    command:
+      - historical
+    env_file:
+      - environment
+    networks:
+      - vehicle_iot
+
+  middlemanager:
+    image: apache/druid:0.22.1
+    container_name: middlemanager
+    volumes:
+      - druid_shared:/opt/shared
+      - middle_var:/opt/druid/var
+    depends_on:
+      - zookeeper
+      - postgres
+      - coordinator
+    ports:
+      - "8091:8091"
+      - "8100-8105:8100-8105"
+    command:
+      - middleManager
+    env_file:
+      - environment
+    networks:
+      - vehicle_iot
+  router:
+    image: apache/druid:0.22.1
+    container_name: router
+    volumes:
+      - router_var:/opt/druid/var
+    depends_on:
+      - zookeeper
+      - postgres
+      - coordinator
+    ports:
+      - "8008:8888"
+    command:
+      - router
+    env_file:
+      - environment
+    networks:
+      - vehicle_iot
+  # Metabase
+  dashboard:
+    image: metabase/metabase
+    container_name: dashboard
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./metabase-data:/metabase-data
+    environment:
+      MB_DB_FILE: /metabase-data/metabase.db
+    networks:
+      - vehicle_iot
+
+networks:
+  vehicle_iot:
+
+volumes:
+  metadata_data: {}
+  middle_var: {}
+  historical_var: {}
+  broker_var: {}
+  coordinator_var: {}
+  router_var: {}
+  druid_shared: {}
